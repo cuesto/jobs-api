@@ -15,7 +15,7 @@ function incorrectUserPass(res){
 router.post('/',
     (req,res,next)=>{
         ValidateField.validateJson({
-                user_email:new ValidateField(req.body.user_email).required().empty(),
+                email:new ValidateField(req.body.email).required().empty(),
                 password:new ValidateField(req.body.password).required().empty()
             })
             .then(()=>next())
@@ -24,16 +24,15 @@ router.post('/',
             });
     }
 ,(req,res)=>{
-    const {user_email,password}=req.body;
+    const {email,password}=req.body;
 
-    User.findByFields({user_name:user_email,email:user_email},'OR')
+    User.findByFields({email})
         .then(async(user)=>{
             if(user===undefined)incorrectUserPass(res);
             else if( await bcrypt.compare(password, user.password)){
                 jwt.sign(
                     {
                         id:user.id,
-                        user_name:user.user_name,
                         email:user.email,
                         name:user.name
                     }, process.env.TOKEN_SEED,{ expiresIn: process.env.TOKEN_EXPIRATION }, 

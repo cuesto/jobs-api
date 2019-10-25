@@ -1,31 +1,25 @@
 var pool=require('../dbPool.js');
-const {find: findModel}=require('../../utils/SqlBuilder');
 
-class User{
+class WorkingDay{
     constructor(){
         this.id;
-        this.email;
-        this.password;
+        this.code;
         this.name;
-        this.sur_name;
-        this.gender;
-        this.birth_date;
-        this.role;
     }
 
     static fromObject(obj){
-        let user=new User();
+        let workingDay=new WorkingDay();
         // user.id=obj.id;
         // user.user_name=obj.user_name;
         // user.email=obj.email;
         // user.password=obj.password;
         // user.name=obj.name;
-        Object.assign(user,obj);
-        return user;
+        Object.assign(workingDay,obj);
+        return workingDay;
     }
 
     static findByFields(fields,operator='AND'){
-        let query=`SELECT * FROM USER WHERE `;
+        let query=`SELECT * FROM WORKING_DAY WHERE `;
         let wheres=[];
         let entries= Object.entries(fields);
         for (const item of entries) {
@@ -43,10 +37,6 @@ class User{
     static findById(id){
         return this.findByFields({id});
     }
-
-    static create(user){
-        return pool.query(`INSERT INTO USER SET ?`,user);
-    }
 }
 
-module.exports=User;
+module.exports=WorkingDay;

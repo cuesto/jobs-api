@@ -1,5 +1,5 @@
 class ValidateField{
-    constructor(value=null,multipleError=true){
+    constructor(value=null,multipleError=false){
         this.value=value;
         this._validateList=[];
         this.multipleError=multipleError;
@@ -41,6 +41,17 @@ class ValidateField{
         return this.regEx(/^[a-zA-Z]+[0-9]*$/,reject);
     }
 
+    date(format='yyyy-mm-dd',reject=`Debe ser una fecha con el formato ${format}`){
+        switch(format){
+            case 'mm-dd-yyyy':
+                return this.regEx(/^((0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)?[0-9]{2})*$/,reject);
+            case 'yyyy-mm-dd':
+                return this.regEx(/^((19|20)?[0-9]{2})[- /.](0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])*$/,reject);
+            case 'dd-mm-yyyy':
+                return this.regEx(/^([0-2][0-9]|(3)[0-1])-(((0)[0-9])|((1)[0-2]))-\d{4}$/,reject);
+        }
+    }
+
     maxLenght(max,reject=`No puede tener mas de ${max} caracteres`){
         return this.custom(async()=>{
             if(this.value.length>max)return Promise.reject(reject);
@@ -55,6 +66,13 @@ class ValidateField{
         },1); 
     }
 
+    accept(values=[],reject=`Solo se aceptan los siguientes valores ${values.join(', ')}`){
+        return this.custom(async()=>{
+            if(!values.includes(this.value))return Promise.reject(reject);
+            else return Promise.resolve();
+        },1); 
+    }
+
     empty(reject='El valor no puede estar vacio'){
         return this.custom(async()=>{
             if(this.value===''||this.value.match(/^ *$/)!==null)return Promise.reject(reject);
@@ -63,14 +81,19 @@ class ValidateField{
     }
 
     // Number
-    number(options={minDecimal:0,maxDecimal:0,minValue:null,maxValue:null},reject='Debe ser un valor numerico'){
-        const {minDecimal=0,maxDecimal=0,minValue=null,maxValue=null}=options;
+    number(options={minDecimal:null,maxDecimal:null,minValue:null,maxValue:null,level:1},reject='Debe ser un valor numerico'){
+        const {minDecimal=null,maxDecimal=null,minValue=null,maxValue=null,level=1}=options;
         return this.custom(()=>{
             if(this.value.length===0)return Promise.reject(reject);
             if(/^-?\d*\.?\d*$/.test(this.value)){
                 const valueSplit=this.value.split('.');
                 let decimalCount=valueSplit.length>1?valueSplit[1].length:0;
-                if(decimalCount<minDecimal || decimalCount>maxDecimal)return Promise.reject(reject);
+                if(minDecimal!==null){
+                    if(decimalCount<minDecimal)return Promise.reject(reject);
+                }
+                if(maxDecimal!==null){
+                    if(decimalCount>maxDecimal)return Promise.reject(reject);
+                }
 
                 if(minValue!==null){
                     if(this.value<minValue)return Promise.reject(reject);
@@ -82,7 +105,7 @@ class ValidateField{
                 return Promise.resolve();
             }
             else return Promise.reject(reject);
-        },1);
+        },level);
     }
 
     async validate(){
@@ -114,6 +137,10 @@ class ValidateField{
         }
     }
 
+    static validateItem(item){
+        return item.validate();
+    }
+
     static async validateArray(validArray){
         let errors=[];
         for (const item of validArray) {
@@ -131,6 +158,21 @@ class ValidateField{
             let err=await json[key].validate().catch((err)=>err);
             if((err||[]).length>0)errors[key]=err;
         }
+
+        // let jsonItem=json;
+        // do {
+        //     switch(typeof jsonItem){
+        //         case 'object':
+        //             for (const key in jsonItem) {
+        //                 let err=await jsonItem[key].validate().catch((err)=>err);
+        //                 if((err||[]).length>0)errors[key]=err;
+        //             }
+        //             break;
+        //         default:
+
+        //             break;
+        //     }
+        // } while (jsonItem);
 
         if(Object.keys(errors).length>0)return Promise.reject(errors);
         else return Promise.resolve();

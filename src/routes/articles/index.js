@@ -4,6 +4,7 @@ const ValidateField = require('../../utils/ValidateField');
 const verifyToken = require('../../middlewares/verifyToken');
 const Article = require('../../database/models/Article');
 
+
 // Get
 router.get('/articles/:id',(req,res)=>{
     Article.findById(req.params.id)
@@ -21,20 +22,19 @@ router.get('/articles', [
         const {text_search,page,limit}=req.query;
         ValidateField.validateJson({
             text_search:new ValidateField(text_search,false).string().empty().maxLenght(30),
-            page:new ValidateField(page,false).number({maxDecimal:0},'Debe ser un numero entero')
+            offset:new ValidateField(page,false).number({maxDecimal:0},'Debe ser un numero entero')
                 .number({minValue:1},'Debe ser mayor que 0'),
             limit:new ValidateField(limit,false).number({maxDecimal:0},'Debe ser un numero entero')
                 .number({minValue:1},'Debe ser mayor que 0'),
         })
         .then(()=>{
-            req.offset=(page-1)*limit;
             next();
         })
         .catch(err=>res.status(400).json(err));
     }
 ], (req, res) => {
-    const {text_search,limit}=req.query;
-    Article.search({textSearch:text_search,offset:req.offset,limit})
+    const {text_search,offset,limit}=req.query;
+    Article.search({textSearch:text_search,offset,limit})
         .then(({result,pagination})=>{
             if(result.length>0){
                 // Url inner

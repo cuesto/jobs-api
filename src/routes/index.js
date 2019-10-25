@@ -8,7 +8,7 @@ router.get('/',(req,res)=>{
 });
 
 router.use(require('./users/index'));
-router.use(require('./articles/index'));
+router.use(require('./jobs/index'));
 //router.use(require('./sellers/index'));
 
 module.exports=router;

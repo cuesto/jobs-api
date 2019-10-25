@@ -8,6 +8,10 @@ require('./config/env.js');
 // Middlewares
 expressApp.use(express.json());
 expressApp.use(express.urlencoded({extended:false}));
+expressApp.use((error, req, res, next) =>{
+    if (error instanceof SyntaxError)res.status(400).json({message:'Error'});
+    else next();
+});
 expressApp.use(cors({
     origin:[process.env.WEB_URL,'http://localhost:3000']
 }));

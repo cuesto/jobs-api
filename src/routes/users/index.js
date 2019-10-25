@@ -8,31 +8,34 @@ router.post('/users',
     [
         (req,res,next)=>{
             ValidateField.validateJson({
-                user_name: new ValidateField(req.body.user_name).minLength(2).maxLenght(15).required().custom(async()=>{
-                    let user=await User.findByFields({user_name:req.body.user_name})
-                        .then(res=>Promise.resolve(res)).catch((err)=>Promise.reject(undefined));
-                    if(user)return Promise.reject('Este nombre de usuario ya existe');
-                    else return Promise.resolve();
-                }),
-                email:new ValidateField(req.body.email,'email').string().email().maxLenght(31).required().custom(async()=>{
+                email:new ValidateField(req.body.email,false).string().email().maxLenght(31).required().custom(async()=>{
                     let user=await User.findByFields({email:req.body.email})
                         .then(res=>Promise.resolve(res)).catch((err)=>Promise.reject(undefined));
-                    if(user)return Promise.reject('Este correo ya existe');
+                    if(user)return Promise.reject('Este correo esta en uso');
                     else return Promise.resolve();
                 }),
-                password:new ValidateField(req.body.password).string().minLength(6).maxLenght(31).required(),
-                name:new ValidateField(req.body.name).string().minLength(2).maxLenght(31).required(),
+                password:new ValidateField(req.body.password).string().minLength(6).maxLenght(32).required(),
+                name:new ValidateField(req.body.name).string().minLength(2).maxLenght(15).required(),
+                sur_name:new ValidateField(req.body.sur_name).string().minLength(2).maxLenght(15).required(),
+                gender:new ValidateField(req.body.gender).string().accept(['M','F']).required(),
+                birth_date:new ValidateField(req.body.birth_date).string().date().required(),
+                role:new ValidateField(req.body.role).string().accept(['C','E']).required()
             })
                 .then(()=>{
                     let user=new User();
-                    user.user_name=req.body.user_name;
                     user.email=req.body.email;
                     user.password=req.body.password;
                     user.name=req.body.name;
+                    user.sur_name=req.body.sur_name;
+                    user.gender=req.body.gender;    
+                    user.birth_date=req.body.birth_date;
+                    user.role=req.body.role;
                     req.user=user;
                     next();
                 })
-                .catch(err=>res.status(400).json(err));
+                .catch(err=>{
+                    res.status(400).json(err);
+                });
         }
     ],
     (req,res)=>{
@@ -46,6 +49,7 @@ router.post('/users',
             })
             .then(()=>res.status(201).end())
             .catch(err=>{
+                console.log(err);
                 res.status(500).json({
                     message:'error tratando de crear el usuario',
                     internal_message:err.message
