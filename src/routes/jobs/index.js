@@ -85,7 +85,7 @@ router.get('/jobs', [
     (req, res, next) => {
         const {text_search,offset=0,limit=30,status='S'}=req.query;
         ValidateField.validateJson({
-            text_search:new ValidateField(text_search,false).string().empty().maxLenght(30),
+            text_search:new ValidateField(text_search,false).string().maxLenght(30),
             offset:new ValidateField(offset,false).number({maxDecimal:0},'Debe ser un numero entero')
                 .number({minValue:0},'Debe ser mayor que 0'),
             limit:new ValidateField(limit,false).number({maxDecimal:0},'Debe ser un numero entero').number({minValue:1},'Debe ser mayor que 0'),
@@ -107,11 +107,10 @@ router.get('/jobs', [
         .then(({data,pagination})=>{
             if(data.length>0){
                 // Url inner
-                // for (const item of result) {
-                //     item.url={};
-                //     if(item.id_seller)item.url.seller=`/sellers/${item.id_seller.toString().trim()}`;
-                //     if(item.id_cash_registrer)item.url.cash_registrer=`/cash_registrers/${item.id_cash_registrer.toString().trim()}`;
-                // }
+                for (const item of data) {
+                    if(item.id_user)item.user='/users/'+item.id_user;
+                    if(item.id_category)item.category='/categories/'+item.id_category;
+                }
                 res.json({
                     data,
                     items:pagination.items,
@@ -122,7 +121,7 @@ router.get('/jobs', [
             else res.status(404).end();
         })
         .catch(err=>{
-            console.log(err);
+            //console.log(err);
             res.status(500).json({internal_message:err.message});
         });
 });

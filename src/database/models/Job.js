@@ -13,7 +13,7 @@ class Job{
         this.views;
         this.published;
         this.status;
-        this.job_detail=[];
+        //this.job_detail=[];
     }
 
     static create(job){
@@ -61,7 +61,7 @@ class Job{
             offset:0,
             limit:30,
             resultModels:true,
-            countPagination:true,
+            countPagination:true,   
         }){
         const {textSearch='',offset=0,limit=10,resultModels=true,countPagination=true,equalsAnd={}} =options;
 
@@ -69,7 +69,7 @@ class Job{
         if (countPagination) query = 'SELECT *,COUNT(*) OVER() AS total_rows FROM JOB';
         else query = 'SELECT * FROM JOB';
 
-        // Text search
+        // Where
         if(textSearch.length>0){
             let textSearchSplit=textSearch.trim().replace(/\s\s+/g,' ').split(' ');
 
@@ -89,13 +89,16 @@ class Job{
             // }).join(' AND '));
         }
 
-        // Where
         if(Object.keys(equalsAnd).length>0){
             for (const key in equalsAnd)whereAnd.push(`${key}=${pool.escape(equalsAnd[key])}`);
         }
-        if(whereAnd.length>0||whereOr.length>0)query+=' WHERE ';
-        query+=whereOr.length>0 ?whereOr.join(' OR '):'';
-        query+=whereAnd.length>0 ?whereAnd.join(' AND '):'';
+        let where=[];
+        if(whereAnd.length>0)where.push(whereAnd.join(' AND '));
+        if(whereOr.length>0)where.push(whereOr.join(' OR '));
+        if(where.length>0)query+=' WHERE '+where.join(' AND ');
+        // if(whereAnd.length>0||whereOr.length>0)query+=' WHERE ';
+        // query+=whereOr.length>0 ?whereOr.join(' OR '):'';
+        // query+=whereAnd.length>0 ?whereAnd.join(' AND '):'';
 
 
         // Sort

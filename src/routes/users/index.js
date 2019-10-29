@@ -3,6 +3,7 @@ const router=express.Router();
 const ValidateField=require('../../utils/ValidateField');
 const bcrypt=require('bcrypt');
 const User=require('../../database/models/User');
+const verifyToken=require('../../middlewares/verifyToken');
 
 router.post('/users',
     [
@@ -57,6 +58,22 @@ router.post('/users',
             });
     }
 );
+
+router.get('/users/:id',(req,res)=>{
+    User.findById(req.params.id)
+        .then(user=>{
+            if(user){
+                delete user.password;
+                res.json(user); 
+            }
+            else res.status(404).end();
+        })
+        .catch(err=>{
+            res.status(500).json({
+                message:err.message
+            })
+        })
+});
 
 router.use('/users/tokens',require('./tokens'));
 module.exports=router;

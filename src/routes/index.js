@@ -9,6 +9,6 @@ router.get('/',(req,res)=>{
 
 router.use(require('./users/index'));
 router.use(require('./jobs/index'));
-//router.use(require('./sellers/index'));
+router.use(require('./categories'));
 
 module.exports=router;
