@@ -13,13 +13,16 @@ expressApp.use((error, req, res, next) =>{
     else next();
 });
 expressApp.use(cors({
-    origin:[process.env.WEB_URL,'http://localhost:3000']
+    origin:[process.env.CLIENT_URL,'http://localhost:3000']
 }));
 // Routes
 expressApp.use(require('./routes/index'));
 
 // Start server
 var server  = require('http').createServer(expressApp);
-server.listen(process.env.PORT,(res,red)=>{
-    console.log('Listening on port',process.env.PORT); 
+server.listen({
+    port:process.env.PORT,
+    host:process.env.HOST
+},(req,res)=>{
+    console.log(`Servidor corriendo en http://${process.env.HOST}:${process.env.PORT}`);
 });

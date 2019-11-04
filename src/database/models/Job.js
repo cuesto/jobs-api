@@ -65,17 +65,22 @@ class Job{
         }){
         const {textSearch='',offset=0,limit=10,resultModels=true,countPagination=true,equalsAnd={}} =options;
 
-        let query='SELECT * FROM JOB',whereOr=[],whereAnd=[];
-        if (countPagination) query = 'SELECT *,COUNT(*) OVER() AS total_rows FROM JOB';
+        let query='SELECT JOB.* FROM JOB',whereOr=[],whereAnd=[];
+        if (countPagination) query = 'SELECT JOB.*,COUNT(JOB.id) OVER() AS total_rows FROM JOB '+
+            'INNER JOIN USER ON USER.id=JOB.id_user';
         else query = 'SELECT * FROM JOB';
 
         // Where
         if(textSearch.length>0){
             let textSearchSplit=textSearch.trim().replace(/\s\s+/g,' ').split(' ');
 
-            whereOr.push('MATCH(title) '+
+            whereOr.push('MATCH(JOB.title) '+
             `AGAINST('${textSearchSplit.map(v=>{
                 return '+'+v+'*';
+            }).join(' ')}' IN BOOLEAN MODE)`);
+            whereOr.push('MATCH(USER.name) '+
+            `AGAINST('${textSearchSplit.map(v=>{
+                return '' +v+ '';
             }).join(' ')}' IN BOOLEAN MODE)`);
             // queryWhere.push(`id_custom LIKE '%${textSearch}%'`);
             // queryWhere.push(`name LIKE '%${textSearch}%'`);
@@ -106,6 +111,8 @@ class Job{
         // Pagination
         if (offset >= 0 && limit > 0) query += ` LIMIT ${offset},${limit}`;
         else if (options.limit > 0) query += ` LIMIT ${limit}`;
+
+        //console.log(query);
 
         return pool.query(query)
             .then((res)=>{
