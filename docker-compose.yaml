@@ -1,0 +1,41 @@
+version: '2.1'
+
+services:
+  jobs-db:
+    image: mysql:5
+    container_name: jobs-db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_HOST=%
+    networks:
+      - jobs-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  jobs-app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: npm start
+    image: jobs-api
+    container_name: jobs-api
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      jobs-db:
+        condition: service_healthy
+          
+
+    networks:
+      - jobs-network
+
+networks:
+  jobs-network:
+    driver: bridge

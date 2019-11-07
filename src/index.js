@@ -1,9 +1,10 @@
+require('dotenv').config()
 const express=require('express');
 const expressApp=express();
 const cors = require('cors');
 
-// Envarioment
-require('./config/env.js');
+// Enviroment
+// require('./config/env.js');
 
 // Middlewares
 expressApp.use(express.json());
@@ -21,8 +22,8 @@ expressApp.use(require('./routes/index'));
 // Start server
 var server  = require('http').createServer(expressApp);
 server.listen({
-    port:process.env.PORT,
-    host:process.env.HOST
+    host:process.env.APP_HOST,
+    port:process.env.APP_PORT
 },(req,res)=>{
-    console.log(`Servidor corriendo en http://${process.env.HOST}:${process.env.PORT}`);
+    console.log(`Servidor corriendo en http://${process.env.APP_HOST}:${process.env.APP_PORT}`);
 });

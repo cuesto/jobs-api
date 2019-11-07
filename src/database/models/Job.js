@@ -66,7 +66,7 @@ class Job{
         const {textSearch='',offset=0,limit=10,resultModels=true,countPagination=true,equalsAnd={}} =options;
 
         let query='SELECT JOB.* FROM JOB',whereOr=[],whereAnd=[];
-        if (countPagination) query = 'SELECT JOB.*,COUNT(JOB.id) OVER() AS total_rows FROM JOB '+
+        if (countPagination) query = 'SELECT JOB.*, COUNT(JOB.id) AS total_rows FROM JOB '+
             'INNER JOIN USER ON USER.id=JOB.id_user';
         else query = 'SELECT * FROM JOB';
 
